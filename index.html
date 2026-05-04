@@ -7,96 +7,113 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;1,700&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
     body { font-family: 'Source Sans 3', sans-serif; color: #1a1a1a; }
 
     /* NAV */
-    .nav { display: flex; flex-direction: column; align-items: center; padding: 20px 40px 0; background: #fff; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 100; }
+    .nav { display: flex; flex-direction: column; align-items: center; padding: 20px 40px 0; background: #fff; border-bottom: 1px solid #e5e7eb; position: fixed; top: 0; left: 0; right: 0; z-index: 100; width: 100%; }
     .nav-logo { margin-bottom: 14px; }
     .nav-logo img { height: 56px; object-fit: contain; display: block; }
     .nav-logo-text { font-family: 'Playfair Display', serif; font-size: 30px; font-weight: 800; color: #185FA5; }
     .nav-logo-text span { color: #3B6D11; }
     .nav-links { display: flex; gap: 36px; border-top: 1px solid #e5e7eb; width: 100%; justify-content: center; padding: 12px 0; }
-    .nav-links a { font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: #555; cursor: pointer; text-decoration: none; font-weight: 600; }
+    .nav-links a { font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: #555; cursor: pointer; text-decoration: none; font-weight: 600; transition: color 0.3s ease; }
     .nav-links a:hover { color: #0C447C; }
 
-    /* HERO */
-    .hero { display: grid; grid-template-columns: 1fr 1fr; min-height: 480px; border-bottom: 1px solid #e5e7eb; }
+    /* HERO - FULL SCREEN */
+    .hero { display: grid; grid-template-columns: 1fr 1fr; min-height: 100vh; width: 100%; margin-top: 110px; }
     .hero-text { padding: 60px 56px; display: flex; flex-direction: column; justify-content: center; background: #fff; }
-    .hero-text h1 { font-family: 'Playfair Display', serif; font-size: 52px; font-weight: 800; color: #0C447C; margin-bottom: 24px; line-height: 1.1; }
-    .hero-text p { font-size: 16px; color: #777; margin-bottom: 40px; line-height: 1.6; font-weight: 300; }
-    .hero-btn { display: inline-block; background: #0C447C; color: white; padding: 16px 32px; border-radius: 50px; font-size: 12px; cursor: pointer; border: none; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; width: fit-content; text-decoration: none; }
-    .hero-btn:hover { background: #185FA5; }
+    .hero-text h1 { font-family: 'Playfair Display', serif; font-size: 52px; font-weight: 800; color: #0C447C; margin-bottom: 24px; line-height: 1.1; animation: fadeInUp 0.8s ease-out; }
+    .hero-text p { font-size: 16px; color: #777; margin-bottom: 40px; line-height: 1.6; font-weight: 300; animation: fadeInUp 0.8s ease-out 0.2s both; }
+    .hero-btn { display: inline-block; background: #0C447C; color: white; padding: 16px 32px; border-radius: 50px; font-size: 12px; cursor: pointer; border: none; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; width: fit-content; text-decoration: none; transition: all 0.3s ease; animation: fadeInUp 0.8s ease-out 0.4s both; }
+    .hero-btn:hover { background: #185FA5; transform: translateY(-3px); box-shadow: 0 10px 25px rgba(12, 68, 124, 0.3); }
     .hero-img { overflow: hidden; }
     .hero-img img { width: 100%; height: 100%; object-fit: cover; display: block; object-position: center; }
 
-    /* ABOUT */
-    .about-banner { position: relative; height: 320px; overflow: hidden; }
+    /* ABOUT - FULL SCREEN SECTION */
+    .about { min-height: 100vh; display: flex; flex-direction: column; }
+    .about-banner { position: relative; height: 40%; overflow: hidden; }
     .about-banner img { width: 100%; height: 100%; object-fit: cover; display: block; filter: brightness(0.5); }
     .about-banner-fallback { width: 100%; height: 100%; background: #1a3a5c; display: flex; align-items: flex-end; }
     .about-banner-label { position: absolute; bottom: 28px; left: 48px; font-family: 'Playfair Display', serif; font-size: 52px; font-weight: 700; font-style: italic; color: #fff; }
-    .about-text-block { padding: 48px 56px; max-width: 860px; }
+    .about-content { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+    .about-text-block { padding: 48px 56px; max-width: 900px; }
     .about-text-block p { font-size: 15px; line-height: 1.9; color: #444; margin-bottom: 16px; font-weight: 300; }
-
-    /* HIGHLIGHTS */
     .highlights-row { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; }
     .highlight { padding: 32px 36px; border-right: 1px solid #e5e7eb; }
     .highlight:last-child { border-right: none; }
     .highlight h4 { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #0C447C; margin-bottom: 8px; }
     .highlight p { font-size: 14px; color: #666; line-height: 1.65; font-weight: 300; }
 
-    /* SERVICES */
-    .section { padding: 64px 40px; }
-    .section-alt { background: #f7f7f5; }
+    /* SERVICES - FULL SCREEN SECTION */
+    .services-section { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 64px 40px; background: #f7f7f5; }
     .section-header { margin-bottom: 40px; }
     .section-header h2 { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 700; color: #0C447C; margin-bottom: 8px; }
     .section-header p { font-size: 15px; color: #777; font-weight: 300; }
-    .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1px; background: #e5e7eb; border: 1px solid #e5e7eb; }
-    .service-card { background: #fff; padding: 28px 24px; transition: background 0.2s; }
-    .service-card:hover { background: #f0f5fb; }
+    .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px; }
+    .service-card { background: #fff; padding: 32px 28px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); transition: all 0.3s ease; }
+    .service-card:hover { transform: translateY(-8px); box-shadow: 0 12px 30px rgba(12, 68, 124, 0.15); background: #f0f5fb; }
     .service-num { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; color: #185FA5; text-transform: uppercase; margin-bottom: 12px; }
     .service-card h3 { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; margin-bottom: 10px; color: #0C447C; }
     .service-card p { font-size: 13px; color: #666; line-height: 1.7; font-weight: 300; }
 
-    /* CONTACT */
-    .contact-section { position: relative; min-height: 520px; display: grid; grid-template-columns: 1fr 1fr; overflow: hidden; }
+    /* CONTACT - FULL SCREEN SECTION */
+    .contact-section { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; overflow: hidden; position: relative; }
     .contact-bg { position: absolute; inset: 0; }
     .contact-bg img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .contact-bg::after { content: ''; position: absolute; inset: 0; background: rgba(12, 68, 124, 0.45); }
+    .contact-bg::after { content: ''; position: absolute; inset: 0; background: rgba(12, 68, 124, 0.55); }
     .contact-form-col { position: relative; z-index: 2; padding: 56px 56px; display: flex; flex-direction: column; justify-content: center; }
     .contact-form-col h2 { font-family: 'Playfair Display', serif; font-size: 48px; font-weight: 700; color: #fff; margin-bottom: 28px; }
-    .contact-form { display: flex; flex-direction: column; gap: 16px; background: rgba(255,255,255,0.97); border-radius: 4px; padding: 28px 24px; }
-    .contact-form label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; color: #555; margin-bottom: 2px; display: block; }
-    .contact-form input, .contact-form textarea { padding: 10px 0; border-radius: 0; border: none; border-bottom: 1px solid #ccc; background: transparent; font-size: 14px; font-family: 'Source Sans 3', sans-serif; color: #1a1a1a; width: 100%; }
-    .contact-form input:focus, .contact-form textarea:focus { outline: none; border-bottom-color: #185FA5; }
-    .contact-form textarea { min-height: 80px; resize: vertical; }
-    .send-btn { background: #0C447C; color: #fff; border: none; padding: 14px 24px; border-radius: 50px; font-size: 12px; cursor: pointer; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-top: 4px; }
-    .send-btn:hover { background: #185FA5; }
+    .contact-form { display: flex; flex-direction: column; gap: 16px; background: rgba(255,255,255,0.97); border-radius: 8px; padding: 32px 28px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1); }
+    .contact-form label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; color: #555; margin-bottom: 4px; display: block; }
+    .contact-form input, .contact-form textarea { padding: 12px 0; border-radius: 4px; border: 1px solid #ddd; background: transparent; font-size: 14px; font-family: 'Source Sans 3', sans-serif; color: #1a1a1a; width: 100%; padding-left: 12px; transition: all 0.3s ease; }
+    .contact-form input:focus, .contact-form textarea:focus { outline: none; border-color: #185FA5; background: rgba(24, 95, 165, 0.05); }
+    .contact-form textarea { min-height: 100px; resize: vertical; }
+    .send-btn { background: #0C447C; color: #fff; border: none; padding: 14px 24px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-top: 8px; transition: all 0.3s ease; }
+    .send-btn:hover { background: #185FA5; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(12, 68, 124, 0.3); }
     .contact-info-col { position: relative; z-index: 2; padding: 56px 56px; display: flex; flex-direction: column; justify-content: center; align-items: flex-end; gap: 24px; }
-    .contact-detail a { color: white; text-decoration: none; font-size: 18px; font-weight: 300; display: block; line-height: 1.9; }
-    .contact-detail a:hover { text-decoration: underline; }
+    .contact-detail a { color: white; text-decoration: none; font-size: 18px; font-weight: 300; display: block; line-height: 1.9; transition: all 0.3s ease; }
+    .contact-detail a:hover { text-decoration: underline; transform: translateX(-5px); }
     .social-icons { display: flex; gap: 14px; margin-top: 8px; }
-    .social-icon { width: 44px; height: 44px; border: 1px solid rgba(255,255,255,0.6); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-    .social-icon:hover { background: rgba(255,255,255,0.15); }
+    .social-icon { width: 44px; height: 44px; border: 1px solid rgba(255,255,255,0.6); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; }
+    .social-icon:hover { background: rgba(255,255,255,0.2); transform: translateY(-3px); }
 
     /* FOOTER */
     footer { background: #0C447C; color: #a8c4e0; text-align: center; padding: 28px 40px; font-size: 12px; letter-spacing: 0.05em; }
-    footer a { color: #a8c4e0; }
+    footer a { color: #a8c4e0; text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    /* ANIMATIONS */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
 
     /* RESPONSIVE */
     @media (max-width: 768px) {
-      .hero { grid-template-columns: 1fr; }
-      .hero-img { height: 280px; }
+      .nav { padding: 12px 20px 0; }
+      .nav-links { gap: 16px; padding: 8px 0; font-size: 10px; }
+      .hero { grid-template-columns: 1fr; margin-top: 130px; }
       .hero-text { padding: 40px 24px; }
       .hero-text h1 { font-size: 36px; }
-      .highlights-row { grid-template-columns: 1fr; }
-      .highlight { border-right: none; border-bottom: 1px solid #e5e7eb; }
-      .about-text-block { padding: 40px 24px; }
+      .about { min-height: auto; }
+      .about-banner { height: 250px; }
       .about-banner-label { font-size: 36px; left: 24px; }
+      .about-text-block { padding: 40px 24px; }
+      .highlights-row { grid-template-columns: 1fr; }
+      .highlight { border-right: none; border-bottom: 1px solid #e5e7eb; padding: 24px 20px; }
+      .services-section { padding: 48px 24px; min-height: auto; }
+      .services-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
       .contact-section { grid-template-columns: 1fr; min-height: auto; }
       .contact-form-col, .contact-info-col { padding: 40px 24px; }
       .contact-info-col { align-items: flex-start; }
-      .section { padding: 48px 24px; }
-      .nav { padding: 16px 20px 0; }
+      .contact-form-col h2 { font-size: 32px; }
     }
   </style>
 </head>
@@ -117,7 +134,7 @@
   </div>
 </nav>
 
-<!-- HERO -->
+<!-- SECTION 1: HERO -->
 <section id="home" class="hero">
   <div class="hero-text">
     <h1>Professional cleaning,<br>powerful results.</h1>
@@ -129,35 +146,37 @@
   </div>
 </section>
 
-<!-- ABOUT -->
-<section id="about">
+<!-- SECTION 2: ABOUT -->
+<section id="about" class="about">
   <div class="about-banner">
     <img src="sydney.jpg" alt="Sydney"
       onerror="this.style.display='none'; this.parentElement.style.background='#1a3a5c'" />
     <div class="about-banner-label">About us</div>
   </div>
-  <div class="about-text-block">
-    <p>With over 2 years of experience, Scrubaroo provides cleaning and maintenance services. We want to give you the best cleaning and maintenance solutions for your business, house or office.</p>
-    <p>Some people think a cleaning service is just cleaning with a cloth, mop and vacuum — we know it's not just that. Our services are beyond that. In the moment we provide the service, we are giving you order, comfort, spotless environment, clean or renewed energy and good satisfaction when you arrive or leave a place.</p>
-  </div>
-  <div class="highlights-row">
-    <div class="highlight">
-      <h4>Satisfaction guarantee</h4>
-      <p>We'll come back and re-clean if anything isn't up to standard — at no extra cost.</p>
+  <div class="about-content">
+    <div class="about-text-block">
+      <p>With over 2 years of experience, Scrubaroo provides cleaning and maintenance services. We want to give you the best cleaning and maintenance solutions for your business, house or office.</p>
+      <p>Some people think a cleaning service is just cleaning with a cloth, mop and vacuum — we know it's not just that. Our services are beyond that. In the moment we provide the service, we are giving you order, comfort, spotless environment, clean or renewed energy and good satisfaction when you arrive or leave a place.</p>
     </div>
-    <div class="highlight">
-      <h4>Attention to detail</h4>
-      <p>Every corner matters. We leave no spot untouched.</p>
-    </div>
-    <div class="highlight">
-      <h4>Trusted by professionals</h4>
-      <p>Real estate agencies and clients across Sydney recommend us.</p>
+    <div class="highlights-row">
+      <div class="highlight">
+        <h4>Satisfaction guarantee</h4>
+        <p>We'll come back and re-clean if anything isn't up to standard — at no extra cost.</p>
+      </div>
+      <div class="highlight">
+        <h4>Attention to detail</h4>
+        <p>Every corner matters. We leave no spot untouched.</p>
+      </div>
+      <div class="highlight">
+        <h4>Trusted by professionals</h4>
+        <p>Real estate agencies and clients across Sydney recommend us.</p>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- SERVICES -->
-<section id="services" class="section section-alt">
+<!-- SECTION 3: SERVICES -->
+<section id="services" class="services-section">
   <div class="section-header">
     <h2>Our services</h2>
     <p>Complete cleaning and maintenance solutions for all types of spaces.</p>
@@ -196,7 +215,7 @@
   </div>
 </section>
 
-<!-- CONTACT -->
+<!-- SECTION 4: CONTACT -->
 <section id="contact" class="contact-section">
   <div class="contact-bg">
     <img src="Contact.jpg" alt="Contact background" />
