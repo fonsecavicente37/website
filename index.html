@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scrubaroo — Cleaning Services Sydney</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;1,700&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Source Sans 3', sans-serif; color: #1a1a1a; height: 100vh; overflow: hidden; display: flex; flex-direction: column; font-size: 17px; }
+
+    /* LOADING SCREEN */
+    #loader {
+      position: fixed; inset: 0;
+      background: #fff;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999; transition: opacity 0.8s ease, visibility 0.8s ease;
+    }
+    #loader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+    #loader img { width: 80vw; height: 80vh; object-fit: contain; }
+
+    /* PAGE FADE IN */
+    #app { opacity: 0; flex: 1; display: flex; flex-direction: column; transition: opacity 0.5s ease; overflow: hidden; }
+    #app.visible { opacity: 1; }
+
+    /* PAGE SWITCH TRANSITION */
+    .page { animation: none; }
+    .page.active { animation: fadeIn 1.2s cubic-bezier(0.4, 0, 0.2, 1); }
+    @keyframes fadeIn { 
+      from { opacity: 0; transform: translateY(18px); } 
+      to { opacity: 1; transform: translateY(0); } 
+    }
+
+    /* NAV */
+    .nav { display: flex; flex-direction: column; align-items: center; padding: 16px 40px 0; background: #fff; border-bottom: 1px solid #e5e7eb; flex-shrink: 0; }
+    .nav-logo { margin-bottom: 12px; }
+    .nav-logo img { height: 52px; object-fit: contain; display: block; }
+    .nav-logo-text { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 800; color: #185FA5; }
+    .nav-logo-text span { color: #3B6D11; }
+    .nav-links { display: flex; gap: 0; border-top: 1px solid #e5e7eb; width: 100%; justify-content: center; }
+    .nav-links a {
+      font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase;
+      color: #555; cursor: pointer; text-decoration: none; font-weight: 600;
+      padding: 12px 32px; border-bottom: 3px solid transparent;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .nav-links a:hover { color: #0C447C; }
+    .nav-links a.active { color: #0C447C; border-bottom: 3px solid #0C447C; }
+
+    /* PAGES */
+    .pages { flex: 1; overflow: hidden; position: relative; }
+    .page { display: none; height: 100%; overflow-y: auto; }
+    .page.active { display: block; }
+
+    /* HOME */
+    .hero { display: grid; grid-template-columns: 1fr 1fr; height: 100%; }
+    .hero-text { padding: 60px 56px; display: flex; flex-direction: column; justify-content: center; background: #fff; }
+    .hero-text h1 { font-family: 'Playfair Display', serif; font-size: 62px; font-weight: 800; color: #0C447C; margin-bottom: 24px; line-height: 1.1; }
+    .hero-text p { font-size: 20px; color: #777; margin-bottom: 40px; line-height: 1.6; font-weight: 300; }
+    .hero-btn { display: inline-block; background: #0C447C; color: white; padding: 16px 32px; border-radius: 50px; font-size: 14px; cursor: pointer; border: none; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; width: fit-content; text-decoration: none; }
+    .hero-btn:hover { background: #185FA5; }
+    .hero-img { overflow: hidden; }
+    .hero-img img { width: 100%; height: 100%; object-fit: cover; display: block; object-position: center; }
+
+    /* ABOUT */
+    .about-page { display: grid; grid-template-columns: 1fr 1fr; height: 100%; }
+    .about-left { overflow-y: auto; padding: 56px; display: flex; flex-direction: column; justify-content: center; }
+    .about-left h2 { font-family: 'Playfair Display', serif; font-size: 50px; font-weight: 700; font-style: italic; color: #0C447C; margin-bottom: 28px; }
+    .about-left p { font-size: 17px; line-height: 1.9; color: #444; margin-bottom: 16px; font-weight: 300; }
+    .about-highlights { display: flex; flex-direction: column; gap: 14px; margin-top: 32px; }
+    .highlight { background: #f7f7f5; border-radius: 8px; padding: 18px 20px; border-left: 4px solid #185FA5; }
+    .highlight h4 { font-size: 14px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #0C447C; margin-bottom: 6px; }
+    .highlight p { font-size: 15px; color: #666; line-height: 1.6; font-weight: 300; margin-bottom: 0; }
+    .about-right { overflow: hidden; position: relative; }
+    .about-right img { width: 100%; height: 100%; object-fit: cover; display: block; filter: brightness(0.55); }
+    .about-right-label { position: absolute; bottom: 32px; left: 36px; font-family: 'Playfair Display', serif; font-size: 48px; font-weight: 700; font-style: italic; color: #fff; }
+
+    /* SERVICES */
+    .services-page { padding: 48px 48px; overflow-y: auto; height: 100%; }
+    .services-page h2 { font-family: 'Playfair Display', serif; font-size: 42px; font-weight: 700; color: #0C447C; margin-bottom: 8px; }
+    .services-page .sub { font-size: 18px; color: #777; font-weight: 300; margin-bottom: 36px; }
+    .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: #e5e7eb; border: 1px solid #e5e7eb; }
+    .service-card { background: #fff; padding: 28px 24px; transition: background 0.2s; }
+    .service-card:hover { background: #f0f5fb; }
+    .service-num { font-size: 13px; font-weight: 700; letter-spacing: 0.14em; color: #185FA5; text-transform: uppercase; margin-bottom: 10px; }
+    .service-card h3 { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; margin-bottom: 10px; color: #0C447C; }
+    .service-card p { font-size: 15px; color: #666; line-height: 1.7; font-weight: 300; }
+
+    /* CONTACT */
+    .contact-page { display: grid; grid-template-columns: 1fr 1fr; height: 100%; position: relative; overflow: hidden; }
+    .contact-bg { position: absolute; inset: 0; }
+    .contact-bg img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .contact-bg::after { content: ''; position: absolute; inset: 0; background: rgba(12, 68, 124, 0.45); }
+    .contact-form-col { position: relative; z-index: 2; padding: 56px; display: flex; flex-direction: column; justify-content: center; }
+    .contact-form-col h2 { font-family: 'Playfair Display', serif; font-size: 52px; font-weight: 700; color: #fff; margin-bottom: 28px; }
+    .contact-form { display: flex; flex-direction: column; gap: 16px; background: rgba(255,255,255,0.97); border-radius: 4px; padding: 28px 24px; }
+    .contact-form label { font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; color: #555; display: block; margin-bottom: 2px; }
+    .contact-form input, .contact-form textarea { padding: 10px 0; border: none; border-bottom: 1px solid #ccc; background: transparent; font-size: 16px; font-family: 'Source Sans 3', sans-serif; color: #1a1a1a; width: 100%; }
+    .contact-form input:focus, .contact-form textarea:focus { outline: none; border-bottom-color: #185FA5; }
+    .contact-form textarea { min-height: 80px; resize: vertical; }
+    .send-btn { background: #0C447C; color: #fff; border: none; padding: 14px 24px; border-radius: 50px; font-size: 14px; cursor: pointer; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+    .send-btn:hover { background: #185FA5; }
+    .contact-info-col { position: relative; z-index: 2; padding: 56px; display: flex; flex-direction: column; justify-content: center; align-items: flex-end; gap: 24px; }
+    .contact-detail a { color: white; text-decoration: none; font-size: 20px; font-weight: 300; display: block; line-height: 1.9; }
+    .contact-detail a:hover { text-decoration: underline; }
+    .social-icons { display: flex; gap: 14px; margin-top: 8px; }
+    .social-icon { width: 44px; height: 44px; border: 1px solid rgba(255,255,255,0.6); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    .social-icon:hover { background: rgba(255,255,255,0.15); }
+
+    /* QUOTATION MODAL */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(12,68,124,0.55);
+      z-index: 1000; display: flex; align-items: center; justify-content: center;
+      opacity: 0; visibility: hidden; transition: opacity 0.4s ease, visibility 0.4s ease;
+    }
+    .modal-overlay.open { opacity: 1; visibility: visible; }
+    .modal {
+      background: #fff; border-radius: 12px; width: 90%; max-width: 780px;
+      max-height: 88vh; overflow-y: auto; padding: 44px 48px;
+      transform: translateY(24px); transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
+      position: relative;
+    }
+    .modal-overlay.open .modal { transform: translateY(0); }
+    .modal-close {
+      position: absolute; top: 18px; right: 24px; background: none; border: none;
+      font-size: 24px; cursor: pointer; color: #999; line-height: 1;
+    }
+    .modal-close:hover { color: #0C447C; }
+    .modal h2 { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; color: #0C447C; margin-bottom: 6px; }
+    .modal .modal-sub { font-size: 14px; color: #888; font-weight: 300; margin-bottom: 28px; }
+    .modal-section { background: #f7f8fa; border-radius: 8px; padding: 20px 24px; margin-bottom: 14px; }
+    .modal-section h3 { font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #0C447C; margin-bottom: 14px; display: flex; align-items: center; gap: 12px; }
+    .modal-section h3 input[type=number] {
+      width: 60px; padding: 4px 8px; border: 1px solid #d0d7e2; border-radius: 6px;
+      font-size: 13px; font-family: inherit; color: #1a1a1a; background: #fff;
+    }
+    .modal-top-fields { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 20px; }
+    .modal-top-fields > div { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 180px; }
+    .modal-top-fields label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #555; }
+    .modal-top-fields input, .modal-top-fields select {
+      padding: 9px 12px; border: 1px solid #d0d7e2; border-radius: 6px;
+      font-size: 14px; font-family: inherit; color: #1a1a1a; background: #fff;
+    }
+    .modal-top-fields input:focus, .modal-top-fields select:focus { outline: none; border-color: #185FA5; }
+    .checkbox-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+    .checkbox-grid label { font-size: 13px; color: #444; display: flex; align-items: center; gap: 6px; font-weight: 300; }
+    .checkbox-grid input[type=checkbox] { accent-color: #185FA5; width: 15px; height: 15px; }
+    .checkbox-grid input[type=checkbox]:disabled { opacity: 0.35; }
+    .modal-section textarea {
+      width: 100%; padding: 8px 10px; border: 1px solid #d0d7e2; border-radius: 6px;
+      font-size: 13px; font-family: inherit; color: #444; resize: vertical; min-height: 60px;
+      margin-top: 4px;
+    }
+    .modal-section textarea:focus { outline: none; border-color: #185FA5; }
+    .modal-submit { background: #0C447C; color: #fff; border: none; padding: 14px 36px; border-radius: 50px; font-size: 12px; cursor: pointer; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-top: 8px; }
+    .modal-submit:hover { background: #185FA5; }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      body { overflow: auto; }
+      .page { overflow-y: visible; height: auto; }
+      .pages { overflow: visible; height: auto; }
+
+      /* HERO — stack vertically, crop image */
+      .hero { grid-template-columns: 1fr; height: auto; }
+      .hero-text { padding: 32px 20px 24px; }
+      .hero-text h1 { font-size: 34px; }
+      .hero-text p { font-size: 15px; margin-bottom: 20px; }
+      .hero-btn { font-size: 12px; padding: 13px 22px; }
+      .hero-img { height: 220px; }
+      .hero-img img { object-position: center top; }
+
+      /* BUTTONS stacked full width */
+      .hero-text > div { flex-direction: column !important; width: 100%; }
+      .hero-text > div button { width: 100% !important; }
+
+      /* ABOUT */
+      .about-page { grid-template-columns: 1fr; height: auto; }
+      .about-left { padding: 28px 20px; }
+      .about-left h2 { font-size: 28px; }
+      .about-left p { font-size: 14px; }
+      .about-right { height: 220px; order: -1; }
+      .about-right img { object-position: center center; }
+
+      /* SERVICES */
+      .services-page { padding: 28px 20px; }
+      .services-page h2 { font-size: 28px; }
+      .services-grid { grid-template-columns: repeat(2, 1fr); }
+      .service-card h3 { font-size: 16px; }
+      .service-card p { font-size: 13px; }
+
+      /* CONTACT */
+      .contact-page { grid-template-columns: 1fr; height: auto; min-height: auto; }
+      .contact-bg img { object-position: center; }
+      .contact-form-col { padding: 32px 20px; }
+      .contact-form-col h2 { font-size: 32px; }
+      .contact-info-col { padding: 20px 20px 36px; align-items: flex-start; }
+      .contact-detail a { font-size: 16px; }
+
+      /* NAV */
+      .nav { padding: 10px 16px 0; }
+      .nav-logo img { height: 40px; }
+      .nav-links a { padding: 8px 10px; font-size: 10px; letter-spacing: 0.06em; }
+
+      /* MODAL */
+      .modal { padding: 28px 20px; width: 95%; }
+      .modal h2 { font-size: 22px; }
+      .checkbox-grid { grid-template-columns: repeat(2, 1fr); }
+      .modal-top-fields > div { min-width: 140px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOADING SCREEN -->
+<div id="loader">
+  <img src="transicion.gif" alt="Loading..." />
+</div>
+
+<div id="app">
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-logo">
+    <img src="logo.jpg" alt="Scrubaroo"
+      onerror="this.style.display='none'; document.getElementById('logo-text').style.display='block'" />
+    <div id="logo-text" style="display:none" class="nav-logo-text">Scruba<span>roo</span></div>
+  </div>
+  <div class="nav-links">
+    <a href="#" class="active" onclick="showPage('home', this)">Home</a>
+    <a href="#" onclick="showPage('about', this)">About us</a>
+    <a href="#" onclick="showPage('services', this)">Services</a>
+    <a href="#" onclick="showPage('contact', this)">Contact</a>
+  </div>
+</nav>
+
+<!-- PAGES -->
+<div class="pages">
+
+  <!-- HOME -->
+  <div id="page-home" class="page active">
+    <div class="hero">
+      <div class="hero-text">
+        <h1>Professional cleaning,<br>powerful results.</h1>
+        <p>Home and Office Cleaning, End-of-Lease,<br>Carpet Cleaning and much more!</p>
+        <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:center;">
+          <button class="hero-btn" onclick="openModal()">Get a free quotation</button>
+          <button class="hero-btn" onclick="showPage('contact', document.querySelector('[onclick*=contact]'))" style="background:transparent; color:#0C447C; border:2px solid #0C447C;">Just contact us!</button>
+        </div>
+      </div>
+      <div class="hero-img">
+        <img src="Scrubaroo.png" alt="Professional cleaning service" />
+      </div>
+    </div>
+  </div>
+
+  <!-- ABOUT -->
+  <div id="page-about" class="page">
+    <div class="about-page">
+      <div class="about-left">
+        <h2>About us</h2>
+        <p>With over 2 years of experience, Scrubaroo provides cleaning and maintenance services. We want to give you the best cleaning and maintenance solutions for your business, house or office.</p>
+        <p>Some people think a cleaning service is just cleaning with a cloth, mop and vacuum — we know it's not just that. Our services are beyond that. In the moment we provide the service, we are giving you order, comfort, spotless environment, clean or renewed energy and good satisfaction when you arrive or leave a place.</p>
+        <div class="about-highlights">
+          <div class="highlight">
+            <h4>Satisfaction guarantee</h4>
+            <p>We'll come back and re-clean if anything isn't up to standard — at no extra cost.</p>
+          </div>
+          <div class="highlight">
+            <h4>Attention to detail</h4>
+            <p>Every corner matters. We leave no spot untouched.</p>
+          </div>
+          <div class="highlight">
+            <h4>Trusted by professionals</h4>
+            <p>Real estate agencies and clients across Sydney recommend us.</p>
+          </div>
+        </div>
+      </div>
+      <div class="about-right">
+        <img src="sydney.jpg" alt="Sydney"
+          onerror="this.style.display='none'; this.parentElement.style.background='#1a3a5c'" />
+        <div class="about-right-label"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SERVICES -->
+  <div id="page-services" class="page">
+    <div class="services-page">
+      <h2>Our services</h2>
+      <p class="sub">Complete cleaning and maintenance solutions for all types of spaces.</p>
+      <div class="services-grid">
+        <div class="service-card">
+          <div class="service-num">01</div>
+          <h3>Regular or once off</h3>
+          <p>Flexible scheduling to suit your lifestyle — weekly, fortnightly, or a one-time clean.</p>
+        </div>
+        <div class="service-card">
+          <div class="service-num">02</div>
+          <h3>Home & office clean</h3>
+          <p>Sparkling clean workplaces and homes for greater productivity and wellbeing.</p>
+        </div>
+        <div class="service-card">
+          <div class="service-num">03</div>
+          <h3>Move out clean</h3>
+          <p>Deep cleaning to help you get your bond back and leave the property in perfect condition.</p>
+        </div>
+        <div class="service-card">
+          <div class="service-num">04</div>
+          <h3>Commercial clean</h3>
+          <p>Professional cleaning for offices, strata and commercial spaces of all sizes.</p>
+        </div>
+        <div class="service-card">
+          <div class="service-num">05</div>
+          <h3>Windows clean</h3>
+          <p>Streak-free window cleaning for residential and commercial properties.</p>
+        </div>
+        <div class="service-card">
+          <div class="service-num">06</div>
+          <h3>Carpet clean</h3>
+          <p>Deep carpet cleaning to remove stains, odours and allergens from your home or office.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTACT -->
+  <div id="page-contact" class="page">
+    <div class="contact-page">
+      <div class="contact-bg">
+        <img src="Contact.png" alt="Contact background" />
+      </div>
+      <div class="contact-form-col">
+        <h2>Contact us</h2>
+        <div class="contact-form">
+          <div>
+            <label>Name</label>
+            <input type="text" id="contactName" placeholder="Your name" />
+          </div>
+          <div>
+            <label>Email address</label>
+            <input type="email" id="contactEmail" placeholder="Your email" />
+          </div>
+          <div>
+            <label>Leave a message</label>
+            <textarea id="contactMessage" placeholder="Tell us about your space and what you need..."></textarea>
+          </div>
+          <button class="send-btn" onclick="submitContact()">Submit</button>
+        </div>
+      </div>
+      <div class="contact-info-col">
+        <div class="contact-detail">
+          <a href="tel:0439567003">0439 567 003</a>
+          <a href="mailto:info@scrubaroo.com.au">info@scrubaroo.com.au</a>
+          <a href="https://www.scrubaroo.com.au" target="_blank">www.scrubaroo.com.au</a>
+        </div>
+        <div class="social-icons">
+          <div class="social-icon" title="Facebook">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+          </div>
+          <div class="social-icon" title="Instagram">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="white" stroke="none"/></svg>
+          </div>
+          <a href="https://wa.me/61439567003" target="_blank" class="social-icon" title="WhatsApp" style="text-decoration:none;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- QUOTATION MODAL -->
+<div class="modal-overlay" id="quotationModal" onclick="handleOverlayClick(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h2>Get a Free Quotation</h2>
+    <p class="modal-sub">Fill in the details below and we'll get back to you shortly.</p>
+
+    <!-- Top fields -->
+    <div class="modal-top-fields">
+      <div>
+        <label>Service Type</label>
+        <select id="serviceType">
+          <option value="">Select a service</option>
+          <option>Regular cleaning</option>
+          <option>End of Lease</option>
+          <option>Office cleaning</option>
+          <option>Commercial / Strata</option>
+        </select>
+      </div>
+      <div>
+        <label>Name</label>
+        <input type="text" id="quoteName" placeholder="Your name" />
+      </div>
+      <div>
+        <label>Email</label>
+        <input type="email" id="quoteEmail" placeholder="Your email" />
+      </div>
+      <div>
+        <label>Phone</label>
+        <input type="tel" id="quotePhone" placeholder="e.g. 0400 000 000" />
+      </div>
+      <div>
+        <label>Date</label>
+        <input type="date" id="quoteDate" />
+      </div>
+      <div>
+        <label>Postcode</label>
+        <input type="text" id="quotePostcode" placeholder="e.g. 2000" style="width:100%" />
+      </div>
+    </div>
+
+    <!-- Dynamic checklist sections -->
+    <div id="modalSections"></div>
+
+    <!-- Final notes -->
+    <div class="modal-section">
+      <h3>Final Notes</h3>
+      <textarea placeholder="Any additional details or special requests..."></textarea>
+    </div>
+
+    <button class="modal-submit" onclick="submitQuotation()">Submit Request</button>
+  </div>
+</div>
+
+</div><!-- end #app -->
+
+<script>
+  // EmailJS init
+  emailjs.init('B-AEhzqXtEoWJeujo');
+  const SERVICE_ID  = 'service_rn1nuzb';
+  const TEMPLATE_ID = 'template_k1y5lns';
+
+  // Hide loader after GIF finishes (~4 seconds)
+  setTimeout(function() {
+    document.getElementById('loader').classList.add('hidden');
+    document.getElementById('app').classList.add('visible');
+  }, 4000);
+
+  function openModal() {
+    document.getElementById('quotationModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal() {
+    document.getElementById('quotationModal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  function handleOverlayClick(e) {
+    if (e.target === document.getElementById('quotationModal')) closeModal();
+  }
+
+  function toggleSection(counterInput, section) {
+    const checkboxes = section.querySelectorAll("input[type='checkbox']");
+    const enabled = parseInt(counterInput.value) > 0;
+    checkboxes.forEach(cb => { cb.disabled = !enabled; if (!enabled) cb.checked = false; });
+  }
+
+  function createSection(title, items) {
+    return `
+    <div class="modal-section">
+      <h3>${title}
+        <input type="number" min="0" value="0" title="Number of ${title.toLowerCase()}"
+          oninput="toggleSection(this, this.closest('.modal-section'))">
+      </h3>
+      <div class="checkbox-grid">
+        ${items.map(i => `<label><input type="checkbox" disabled> ${i}</label>`).join('')}
+      </div>
+      <textarea placeholder="Notes for ${title.toLowerCase()}..."></textarea>
+    </div>`;
+  }
+
+  document.getElementById('modalSections').innerHTML =
+    createSection('Rooms',                ['Door/Frame','Wall','Windows/Frame','Wardrobe','Mirror','Floor']) +
+    createSection('Kitchen',              ['Door/Frame','Wall','Windows','Stove','Rangehood','Dishwasher','Cupboards','Oven','Floor','Machine']) +
+    createSection('Bathrooms',            ['Door/Frame','Wall','Windows','Shower','Mirror','Floor','Bath','Hand Wash','Toilet','Cabinets']) +
+    createSection('Living / Common Area', ['Door/Frame','Wall','Windows','Floor']) +
+    createSection('Balconies',            ['Slide Door','Floor']) +
+    createSection('Laundry',              ['Cabinet','Sink','Machine','Wall','Floor','Door']) +
+    createSection('Backyard / Garden',    ['Remove Weeds','Trimming','Branches','Rubbish']) +
+    createSection('Around Place',         ['Skirting Boards','Powerpoints','Lights/Fans','Switches','Blinds','Door']);
+
+  function submitQuotation() {
+    const name     = document.getElementById('quoteName').value.trim();
+    const email    = document.getElementById('quoteEmail').value.trim();
+    const phone    = document.getElementById('quotePhone').value.trim();
+    const service  = document.getElementById('serviceType').value;
+    const postcode = document.getElementById('quotePostcode').value.trim();
+
+    if (!name || !email) {
+      alert('Please fill in at least your name and email.');
+      return;
+    }
+
+    const checked = [...document.querySelectorAll('#quotationModal input[type=checkbox]:checked')]
+      .map(cb => cb.parentElement.textContent.trim()).join(', ');
+    const notes = [...document.querySelectorAll('#quotationModal .modal-section textarea')]
+      .map(t => t.value.trim()).filter(Boolean).join(' | ');
+
+    const params = {
+      name, email, phone: phone || 'Not provided',
+      service: service || 'Not specified',
+      postcode: postcode || 'Not specified',
+      message: (checked ? 'Checklist: ' + checked : '') + (notes ? '\nNotes: ' + notes : '')
+    };
+
+    emailjs.send(SERVICE_ID, TEMPLATE_ID, params)
+      .then(() => {
+        alert('Thank you! Your quotation request has been sent. We will be in touch shortly. ✔');
+        closeModal();
+      })
+      .catch(err => {
+        console.error('EmailJS error:', err);
+        alert('Something went wrong. Please contact us directly at info@scrubaroo.com.au');
+      });
+  }
+
+  function submitContact() {
+    const name    = document.getElementById('contactName').value.trim();
+    const email   = document.getElementById('contactEmail').value.trim();
+    const message = document.getElementById('contactMessage').value.trim();
+
+    if (!name || !email) {
+      alert('Please fill in at least your name and email.');
+      return;
+    }
+
+    emailjs.send(SERVICE_ID, TEMPLATE_ID, {
+      name, email,
+      phone: 'Not provided',
+      service: 'Contact form',
+      postcode: 'Not provided',
+      message: message || '(no message)'
+    })
+    .then(() => {
+      alert('Message sent! We will get back to you shortly. ✔');
+      document.getElementById('contactName').value = '';
+      document.getElementById('contactEmail').value = '';
+      document.getElementById('contactMessage').value = '';
+    })
+    .catch(err => {
+      console.error('EmailJS error:', err);
+      alert('Something went wrong. Please contact us directly at info@scrubaroo.com.au');
+    });
+  }
+
+  function showPage(id, el) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+    document.getElementById('page-' + id).classList.add('active');
+    if (el) el.classList.add('active');
+    return false;
+  }
+</script>
+
+</body>
+</html>
